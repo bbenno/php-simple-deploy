@@ -32,17 +32,22 @@ function log_access($path) {
 	if (empty($path))
 		return FALSE;
 
-	$log  = "User: ".$_SERVER['REMOTE_ADDR'].' - '.$_SERVER['REQUEST_TIME'].PHP_EOL.
+	$log  = "User: ".$_SERVER['REMOTE_ADDR'].' - '.date('Y-m-d H:i:s', $_SERVER['REQUEST_TIME']).PHP_EOL.
 	        "User Agent: ".$_SERVER['HTTP_USER_AGENT'].PHP_EOL.
 	        "-------------------------".PHP_EOL;
 
-	return file_put_contents($path.'/logs/log_'.date("Y-m-d").'.log', $log, FILE_APPEND);
+	return file_put_contents($path.'/log_'.date("Y-m-d").'.log', $log, FILE_APPEND);
 }
 ?>
 
 <?php
 $DEBUG = TRUE;
-log_access($config['log_dir']);
+$log_suc = log_access($config['log_dir']);
+
+if ($DEBUG && !$log_suc){
+	echo "<p>Faild writing to log.<br>Path: {$config['log_dir']}</p>";
+}
+
 if (isSSL() && isset($_POST)) {
 	if ($DEBUG) {
 		echo shell_exec('echo Hello World');
