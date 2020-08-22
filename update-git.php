@@ -8,6 +8,7 @@
 
 define('HTTP_SUCCESS', 200);
 define('HTTP_ERROR', 400);
+define('HTTP_INTERNAL_ERROR', 500);
 
 
 /**
@@ -49,10 +50,19 @@ if ($DEBUG && !$log_suc){
 }
 
 if (isSSL() && isset($_POST)) {
-	if ($DEBUG) {
-		echo shell_exec('echo Hello World');
+	if ($_POST['shared_secret'] == $config['shared_secret']) {
+		$pull_result = shell_exec('./pull.sh');
+		echo "<pre>\n".$pull_result."</pre>\n";
+
+		if (!empty($pull_result) && !preg_match('/Aborting|Error/', $pull_result))
+			http_response_code(HTTP_SUCCESS);
+		else
+			http_response_code(HTTP_INTERNAL_ERROR);
+	} else {
+		if ($DEBUG)
+			echo '<p>Wrong secret.</p>';
+		http_response_code(HTTP_ERROR);
 	}
-	http_response_code(HTTP_SUCCESS);
 } else {
 	http_response_code(HTTP_ERROR);
 }
